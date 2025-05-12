@@ -20,7 +20,7 @@ def send_to_sync(data: dict) -> dict:
         if "timestamp" in sync_data and isinstance(sync_data["timestamp"], int):
             sync_data["timestamp"] = unix_to_iso(sync_data["timestamp"])
         
-        url = f"{SYNC_API_URL}/optimize"
+        url = f"{SYNC_API_URL}/evaluate"
         response = requests.post(url, json=sync_data)
         response.raise_for_status()
         

@@ -1,6 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import insert
-from datetime import datetime
 from models.validator import validate_payload
 from models.schemas import TrafficData, OptimizationData, DownloadRequest
 from services.storage_proxy import upload_to_storage, download_from_storage
@@ -72,6 +70,12 @@ def process(data: TrafficData):
     except Exception as e:
         print("Sync optimization failed:", str(e))
         raise HTTPException(status_code=500, detail=f"Sync optimization failed: {str(e)}")
+    
+        # Validate the incoming data
+    try:
+        validate_payload(optimized.dict())
+    except ValueError as ve:
+        raise HTTPException(status_code=422, detail=str(ve))
     
     # Upload optimized data
     try:
