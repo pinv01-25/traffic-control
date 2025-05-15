@@ -35,6 +35,16 @@ def upload_to_storage(data: dict) -> dict:
     Automatically prepares the payload with Unix timestamp.
     """
     try:
+        # Check if data is of type optimization
+        if data.get("type") == "optimization":
+            if isinstance(data.get("timestamp"), str):
+                print("Optimization data received with ISO timestamp.")
+                # Convert timestamp to Unix format
+                print(f"Original timestamp: {data['timestamp']}")
+                data["timestamp"] = iso_to_unix(data["timestamp"])   
+                print("Converted to Unix timestamp.")
+                print(f"Data after conversion: {data["timestamp"]}")     
+        
         # Prepare payload with Unix timestamp
         storage_payload = prepare_storage_payload(data)
         

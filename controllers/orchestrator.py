@@ -107,10 +107,9 @@ def process(data: TrafficData):
     db = SessionLocal()
     try:
         logger.info("Registering optimization metadata locally...")
-        opt_unix_timestamp = iso_to_unix(optimized["timestamp"])
         opt_entry = MetadataIndex(
             type="optimization",
-            timestamp=opt_unix_timestamp,
+            timestamp=optimized["timestamp"],
             traffic_light_id=optimized["traffic_light_id"]
         )
         db.add(opt_entry)
