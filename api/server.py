@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from models.validator import validate_payload
 from models.schemas import TrafficData, OptimizationData, DownloadRequest
 from services.storage_proxy import upload_to_storage, download_from_storage
 from services.sync_proxy import send_to_sync
-from database.db import SessionLocal
+from database.db import SessionLocal, init_db
 from database.metadata_model import MetadataIndex
 from utils.time import iso_to_unix
 import logging
@@ -16,9 +17,29 @@ logging.basicConfig(
 )
 logger = logging.getLogger("process_endpoint")
 
-router = APIRouter()
+app = FastAPI(title="Traffic Control Service")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@router.post("/process")
+@app.get("/")
+def root():
+    return {"message": "Traffic Control Service is running"}
+
+@app.get("/healthcheck")
+def health_check():
+    return {"status": "healthy"}
+
+@app.on_event("startup")
+async def startup_event():
+    init_db()
+
+
+@app.post("/process")
 def process(data: TrafficData):
     logger.info("Starting process endpoint...")
     
