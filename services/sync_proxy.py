@@ -1,36 +1,75 @@
 import requests
 import os
 from dotenv import load_dotenv
-from utils.time import unix_to_iso
+from typing import Dict, Any, List
+from services.data_processor import DataProcessor
+import logging
 
 load_dotenv()
 
 SYNC_API_URL = os.getenv("SYNC_API_URL")
+logger = logging.getLogger(__name__)
 
-def send_to_sync(data: dict) -> dict:
-    """Send data to traffic-sync service for optimization.
+class SyncProxy:
+    """Proxy service for interacting with traffic-sync service."""
     
-    Ensures timestamp is in ISO format for sync's compatibility.
-    """
-    try:
-        # Make a copy to avoid modifying the original
-        sync_data = data.copy()
+    @staticmethod
+    def send_to_sync(data: Dict[str, Any]) -> Dict[str, Any]:
+        """Send data to traffic-sync service for optimization.
         
-        # Ensure timestamp is in ISO format for sync
-        if "timestamp" in sync_data and isinstance(sync_data["timestamp"], int):
-            sync_data["timestamp"] = unix_to_iso(sync_data["timestamp"])
-        
-        url = f"{SYNC_API_URL}/evaluate"
-        response = requests.post(url, json=sync_data)
-        response.raise_for_status()
-        
-        result = response.json()
-        
-        # Ensure the timestamp format is ISO for consistency
-        if "timestamp" in result and isinstance(result["timestamp"], int):
-            result["timestamp"] = unix_to_iso(result["timestamp"])
+        Args:
+            data: Data to send for optimization
+        Returns:
+            Optimization response
+        """
+        try:
+            url = f"{SYNC_API_URL}/evaluate"
+            response = requests.post(url, json=data)
+            response.raise_for_status()
             
-        return result
-    except Exception as e:
-        print(f"Error sending to sync: {str(e)}")
-        raise
+            logger.info("Successfully sent data to sync service")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Error sending data to sync: {str(e)}")
+            raise
+    
+    @staticmethod
+    def send_batch_for_optimization(batch_data: Dict[str, Any], target_sensor_id: str) -> Dict[str, Any]:
+        """Send batch data to traffic-sync service for optimization.
+        
+        Args:
+            batch_data: Complete data batch
+            target_sensor_id: ID of the target sensor for optimization (used as traffic_light_id)
+        Returns:
+            Batch optimization response
+        """
+        try:
+            # Prepare batch data for sync service
+            # The sync service expects the batch format with 'traffic_light_id' field
+            sync_batch_data = {
+                "version": batch_data["version"],
+                "type": "data",  # Changed from "batch" to "data"
+                "timestamp": batch_data["timestamp"],
+                "traffic_light_id": target_sensor_id,
+                "sensors": batch_data["sensors"]
+            }
+            
+            logger.info(f"Sending batch with {len(batch_data['sensors'])} sensors for optimization")
+            logger.info(f"Target sensor ID: {target_sensor_id}")
+            
+            # Send to the unified evaluate endpoint
+            url = f"{SYNC_API_URL}/evaluate"
+            response = requests.post(url, json=sync_batch_data)
+            response.raise_for_status()
+            
+            logger.info("Successfully sent batch data to sync service")
+            return response.json()
+            
+        except Exception as e:
+            logger.error(f"Error sending batch for optimization: {str(e)}")
+            raise
+
+# Legacy function for backward compatibility
+def send_to_sync(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Legacy function for backward compatibility."""
+    return SyncProxy.send_to_sync(data)
