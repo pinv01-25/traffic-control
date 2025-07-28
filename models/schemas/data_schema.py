@@ -49,6 +49,10 @@ class TrafficData(BaseModel):
     @validator('timestamp')
     def validate_timestamp(cls, v):
         try:
+            # Validar formato ISO estricto
+            if not re.match(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$', v):
+                raise ValueError('Timestamp must be in strict ISO format (e.g., 2025-05-19T14:20:00Z)')
+            
             # Try to parse as ISO format with timezone
             datetime.fromisoformat(v.replace('Z', '+00:00'))
             return v
