@@ -22,6 +22,17 @@ class DatabaseService:
         """
         db = SessionLocal()
         try:
+            # Check if metadata already exists
+            existing = db.query(MetadataIndex).filter(
+                MetadataIndex.type == data_type,
+                MetadataIndex.timestamp == timestamp,
+                MetadataIndex.traffic_light_id == traffic_light_id
+            ).first()
+            
+            if existing:
+                logger.info(f"Metadata already exists: {data_type}, {traffic_light_id}, {timestamp}")
+                return
+            
             logger.info(f"Registering metadata: {data_type}, {traffic_light_id}, {timestamp}")
             entry = MetadataIndex(
                 type=data_type,
@@ -90,11 +101,11 @@ class DatabaseService:
                 iso_timestamp = optimized_data["timestamp"]
                 unix_timestamp = iso_to_unix(iso_timestamp)
                 
-        DatabaseService.register_metadata(
-            "optimization",
+                DatabaseService.register_metadata(
+                    "optimization",
                     unix_timestamp,
-            optimized_data["traffic_light_id"]
-        )
+                    optimized_data["traffic_light_id"]
+                )
     
     @staticmethod
     def get_metadata_by_traffic_light(traffic_light_id: str, limit: int = 100) -> List[Dict[str, Any]]:

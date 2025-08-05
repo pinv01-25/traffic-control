@@ -100,7 +100,11 @@ class ProcessService:
         DatabaseService.register_optimization_metadata(optimized)
         
         logger.info("Batch processing completed successfully")
-        return ResponseFactory.processing_success()
+        return ResponseFactory.processing_success(
+            data_type=batch_data.type,
+            traffic_light_id=batch_data.traffic_light_id,
+            timestamp=batch_data.timestamp
+        )
     
     # Private helper methods
     @staticmethod
