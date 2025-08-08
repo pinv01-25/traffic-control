@@ -12,7 +12,7 @@ class Settings:
     SYNC_API_URL: str = os.getenv("SYNC_API_URL", "http://localhost:8002")
     
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./traffic_control.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://usuario:contraseña@localhost:5432/dbname")
     
     # Validation settings
     MAX_SENSORS_PER_BATCH: int = int(os.getenv("MAX_SENSORS_PER_BATCH", "10"))

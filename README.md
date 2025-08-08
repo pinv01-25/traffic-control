@@ -49,13 +49,15 @@ Traffic-Control es el módulo orquestador del sistema distribuido de gestión de
 ## Primeros Pasos
 
 ### Requisitos previos
-* Python ≥ 3.10
 
-* PostgreSQL (u otro motor soportado por SQLAlchemy)
+- Python ≥ 3.10
 
-* Variables de entorno configuradas:
+- PostgreSQL (u otro motor soportado por SQLAlchemy)
 
-  * .env con:
+- Variables de entorno configuradas:
+
+  - .env con:
+
 ```
 DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/dbname
 STORAGE_API_URL=http://localhost:8000
@@ -63,11 +65,13 @@ SYNC_API_URL=http://localhost:8002
 ```
 
 ### Instalar dependencias
+
 ```
 pip install -r requirements.txt
 ```
 
 ### Ejecutar el servidor
+
 ```
 ./run.sh
 ```
@@ -83,6 +87,7 @@ Visita: [http://localhost:8003](http://localhost:8003)
 Procesa una observación vehicular completa: valida, sube a storage, registra, recupera, y vuelve a subir. Maneja tanto sensores individuales como lotes de 1-10 sensores.
 
 **Cuerpo de la solicitud (sensor individual):**
+
 ```json
 {
   "version": "2.0",
@@ -111,6 +116,7 @@ Procesa una observación vehicular completa: valida, sube a storage, registra, r
 ```
 
 **Cuerpo de la solicitud (lote de sensores):**
+
 ```json
 {
   "version": "2.0",
@@ -155,10 +161,11 @@ Procesa una observación vehicular completa: valida, sube a storage, registra, r
 ```
 
 **Respuesta:**
+
 ```json
 {
-"status": "success",
-"message": "Data processed and optimized successfully"
+  "status": "success",
+  "message": "Data processed and optimized successfully"
 }
 ```
 
@@ -168,13 +175,13 @@ Verifica que el servicio esté activo.
 
 ### Endpoints de Metadatos
 
-| Endpoint | Método | Descripción |
-|----------|--------|-------------|
-| `/metadata/traffic-light/{id}` | GET | Obtener metadatos por semáforo |
-| `/metadata/type/{type}` | GET | Obtener metadatos por tipo |
-| `/metadata/recent` | GET | Obtener metadatos recientes |
-| `/metadata/stats` | GET | Obtener estadísticas de metadatos |
-| `/metadata/traffic-light/{id}` | DELETE | Eliminar metadatos por semáforo |
+| Endpoint                       | Método | Descripción                       |
+| ------------------------------ | ------ | --------------------------------- |
+| `/metadata/traffic-light/{id}` | GET    | Obtener metadatos por semáforo    |
+| `/metadata/type/{type}`        | GET    | Obtener metadatos por tipo        |
+| `/metadata/recent`             | GET    | Obtener metadatos recientes       |
+| `/metadata/stats`              | GET    | Obtener estadísticas de metadatos |
+| `/metadata/traffic-light/{id}` | DELETE | Eliminar metadatos por semáforo   |
 
 ---
 
@@ -182,42 +189,43 @@ Verifica que el servicio esté activo.
 
 ### Validación (models/validator.py)
 
-* Verifica versión, timestamp, tipo y campos requeridos según tipo (`data` u `optimization`).
-* Validación de IDs de semáforo: solo números (`"21"`, `"22"`, etc.)
-* Validación de límites: 1-10 sensores por lote
-* Tipo `data` unificado: maneja tanto sensores individuales como lotes
+- Verifica versión, timestamp, tipo y campos requeridos según tipo (`data` u `optimization`).
+- Validación de IDs de semáforo: solo números (`"21"`, `"22"`, etc.)
+- Validación de límites: 1-10 sensores por lote
+- Tipo `data` unificado: maneja tanto sensores individuales como lotes
 
 ### Almacenamiento (services/storage_proxy.py)
 
-* Sube/descarga datos hacia/desde `traffic-storage` usando `tls_id`, `timestamp`, `type`.
-* Soporte para lotes de datos y datos individuales.
+- Sube/descarga datos hacia/desde `traffic-storage` usando `tls_id`, `timestamp`, `type`.
+- Soporte para lotes de datos y datos individuales.
 
 ### Sincronización (services/sync_proxy.py)
 
-* Llama a `traffic-sync` vía `/evaluate` para obtener resultados optimizados.
-* Soporte para optimización de lotes con múltiples sensores.
+- Llama a `traffic-sync` vía `/evaluate` para obtener resultados optimizados.
+- Soporte para optimización de lotes con múltiples sensores.
 
 ### Base de Datos (database/)
 
-* Guarda todos los registros con `tls_id`, `timestamp`, `type`.
-* Nuevos endpoints para gestión de metadatos.
+- Guarda todos los registros con `tls_id`, `timestamp`, `type`.
+- Nuevos endpoints para gestión de metadatos.
 
 ### Manejo de Errores (utils/error_handler.py)
 
-* Manejo centralizado de errores con contexto.
-* Respuestas de error estandarizadas.
-* Logging automático de errores.
+- Manejo centralizado de errores con contexto.
+- Respuestas de error estandarizadas.
+- Logging automático de errores.
 
 ### Respuestas Estandarizadas (models/response_models.py)
 
-* Formato consistente para todas las respuestas de la API.
-* Factory pattern para crear respuestas estandarizadas.
+- Formato consistente para todas las respuestas de la API.
+- Factory pattern para crear respuestas estandarizadas.
 
 ---
 
 ## Pruebas
 
 ### Pruebas con curl
+
 ```bash
 # Health check
 curl -X GET http://localhost:8003/healthcheck
@@ -257,17 +265,18 @@ curl -X POST http://localhost:8003/process \
 
 ### Variables de Entorno
 
-| Variable | Valor por defecto | Descripción |
-|----------|-------------------|-------------|
-| `DATABASE_URL` | `sqlite:///./traffic_control.db` | URL de conexión a la base de datos |
-| `STORAGE_API_URL` | `http://localhost:8000` | URL del servicio de almacenamiento |
-| `SYNC_API_URL` | `http://localhost:8002` | URL del servicio de sincronización |
+| Variable          | Valor por defecto                                       | Descripción                        |
+| ----------------- | ------------------------------------------------------- | ---------------------------------- |
+| `DATABASE_URL`    | `postgresql://usuario:contraseña@localhost:5432/dbname` | URL de conexión a la base de datos |
+| `STORAGE_API_URL` | `http://localhost:8000`                                 | URL del servicio de almacenamiento |
+| `SYNC_API_URL`    | `http://localhost:8002`                                 | URL del servicio de sincronización |
 
 ---
 
 ## Compatibilidad
 
 **Nuevas funcionalidades:**
+
 - Tipo `data` unificado que maneja tanto sensores individuales como lotes
 - Endpoint `/process` unificado para procesar sensores individuales y lotes
 - Compatibilidad total hacia atrás con el formato original
@@ -276,4 +285,5 @@ curl -X POST http://localhost:8003/process \
 ---
 
 ## Autor
+
 Majo Duarte
