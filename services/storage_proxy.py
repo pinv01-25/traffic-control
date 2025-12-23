@@ -1,12 +1,13 @@
 import copy
-import requests
+import logging
 import os
 import time
+
+import requests
 from dotenv import load_dotenv
-from models.schemas import TrafficData, OptimizationData, DownloadRequest
-from utils.time import unix_to_iso, iso_to_unix, normalize_timestamp
+from models.schemas import DownloadRequest
 from services.data_processor import DataProcessor
-import logging
+from utils.time import iso_to_unix, unix_to_iso
 
 load_dotenv()
 

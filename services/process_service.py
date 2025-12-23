@@ -1,16 +1,19 @@
 import json
-import time
-from typing import Dict, Any, Optional, List, Union
-from models.validator import validate_payload, validate_optimization_response, validate_sync_service_input, validate_optimization_batch_response
-from models.schemas import TrafficData
+import logging
+from typing import Any, Dict, List, Union
+
 from models.response_models import ResponseFactory
-from services.storage_proxy import StorageProxy
-from services.sync_proxy import SyncProxy
+from models.schemas import TrafficData
+from models.validator import (
+    validate_optimization_batch_response,
+    validate_payload,
+    validate_sync_service_input,
+)
 from services.data_processor import DataProcessor
 from services.database_service import DatabaseService
+from services.storage_proxy import StorageProxy
+from services.sync_proxy import SyncProxy
 from utils.time import iso_to_unix
-import logging
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,7 @@ class ProcessService:
         unix_timestamp = iso_to_unix(data.timestamp)
         
         # Upload to storage
-        upload_response = ProcessService._upload_to_storage(data.dict())
+        ProcessService._upload_to_storage(data.dict())
         
         # Register metadata locally
         DatabaseService.register_metadata(data.type, unix_timestamp, data.traffic_light_id)
@@ -197,7 +200,7 @@ class ProcessService:
                 
                 logger.info(f"Uploading optimization batch with {len(optimized)} optimizations")
                 StorageProxy.upload_to_storage(optimization_batch)
-                logger.info(f"Successfully uploaded optimization batch to storage")
+                logger.info("Successfully uploaded optimization batch to storage")
             else:
                 # Single optimization - create batch format with single item
                 optimization_batch = {

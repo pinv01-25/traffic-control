@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class OptimizationDetails(BaseModel):
     green_time_sec: int
     red_time_sec: int

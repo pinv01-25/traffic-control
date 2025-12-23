@@ -1,8 +1,9 @@
-from typing import Dict, Any, Optional, Callable
-from fastapi import HTTPException
 import logging
 import traceback
 from functools import wraps
+from typing import Any, Callable
+
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +62,9 @@ class ErrorHandler:
         try:
             return func(*args, **kwargs)
         except ValueError as e:
-            raise ErrorHandler.handle_validation_error(e, context)
+            raise ErrorHandler.handle_validation_error(e, context) from e
         except Exception as e:
-            raise ErrorHandler.handle_generic_error(e, context)
+            raise ErrorHandler.handle_generic_error(e, context) from e
 
 def error_handler_decorator(context: str = ""):
     """
@@ -78,8 +79,8 @@ def error_handler_decorator(context: str = ""):
             try:
                 return func(*args, **kwargs)
             except ValueError as e:
-                raise ErrorHandler.handle_validation_error(e, context)
+                raise ErrorHandler.handle_validation_error(e, context) from e
             except Exception as e:
-                raise ErrorHandler.handle_generic_error(e, context)
+                raise ErrorHandler.handle_generic_error(e, context) from e
         return wrapper
     return decorator 

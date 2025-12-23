@@ -1,9 +1,10 @@
-from typing import Dict, Any, List, Optional, Union
+import logging
+from typing import Any, Dict, List, Union
+
 from database.db import SessionLocal
 from database.metadata_model import MetadataIndex
 from utils.error_handler import ErrorHandler
 from utils.time import iso_to_unix
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class DatabaseService:
             logger.info("Metadata registered successfully.")
         except Exception as e:
             db.rollback()
-            raise ErrorHandler.handle_database_error(e, "register_metadata")
+            raise ErrorHandler.handle_database_error(e, "register_metadata") from e
         finally:
             db.close()
     
@@ -135,7 +136,7 @@ class DatabaseService:
                 for entry in entries
             ]
         except Exception as e:
-            raise ErrorHandler.handle_database_error(e, "get_metadata_by_traffic_light")
+            raise ErrorHandler.handle_database_error(e, "get_metadata_by_traffic_light") from e
         finally:
             db.close()
     
@@ -167,7 +168,7 @@ class DatabaseService:
                 for entry in entries
             ]
         except Exception as e:
-            raise ErrorHandler.handle_database_error(e, "get_metadata_by_type")
+            raise ErrorHandler.handle_database_error(e, "get_metadata_by_type") from e
         finally:
             db.close()
     
@@ -198,7 +199,7 @@ class DatabaseService:
                 for entry in entries
             ]
         except Exception as e:
-            raise ErrorHandler.handle_database_error(e, "get_recent_metadata")
+            raise ErrorHandler.handle_database_error(e, "get_recent_metadata") from e
         finally:
             db.close()
     
@@ -222,7 +223,7 @@ class DatabaseService:
             return deleted_count
         except Exception as e:
             db.rollback()
-            raise ErrorHandler.handle_database_error(e, "delete_metadata_by_traffic_light")
+            raise ErrorHandler.handle_database_error(e, "delete_metadata_by_traffic_light") from e
         finally:
             db.close()
     
@@ -252,6 +253,6 @@ class DatabaseService:
                 "unique_traffic_lights": unique_traffic_lights
             }
         except Exception as e:
-            raise ErrorHandler.handle_database_error(e, "get_metadata_stats")
+            raise ErrorHandler.handle_database_error(e, "get_metadata_stats") from e
         finally:
             db.close() 

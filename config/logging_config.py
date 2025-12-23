@@ -2,6 +2,7 @@ import logging
 import sys
 from typing import Optional
 
+
 # ANSI color codes for consistent logging across all services
 class Colors:
     GREEN = '\033[92m'

@@ -1,9 +1,9 @@
-import requests
-import os
-from dotenv import load_dotenv
-from typing import Dict, Any, List
-from services.data_processor import DataProcessor
 import logging
+import os
+from typing import Any, Dict
+
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 

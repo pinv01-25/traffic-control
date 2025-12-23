@@ -1,5 +1,6 @@
-from sqlalchemy import Column, String, BigInteger
 from database.db import Base
+from sqlalchemy import BigInteger, Column, String
+
 
 class MetadataIndex(Base):
     __tablename__ = "metadata_index"

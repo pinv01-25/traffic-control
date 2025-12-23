@@ -1,12 +1,14 @@
+import logging
+
+from database.db import init_db
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from models.schemas import TrafficData, OptimizationData, DownloadRequest
-from models.response_models import ResponseFactory, HealthCheckResponse
-from services.process_service import ProcessService
+from models.response_models import HealthCheckResponse, ResponseFactory
+from models.schemas import TrafficData
 from services.database_service import DatabaseService
-from utils.error_handler import ErrorHandler, error_handler_decorator
-from database.db import init_db
-import logging
+from services.process_service import ProcessService
+from utils.error_handler import error_handler_decorator
+
 
 # ANSI color codes for consistent logging
 class Colors:

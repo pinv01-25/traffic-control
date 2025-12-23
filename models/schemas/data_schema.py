@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field, validator
-from typing import List, Dict, Any
-from datetime import datetime
 import re
+from datetime import datetime
+from typing import List
+
+from pydantic import BaseModel, Field, validator
+
 
 class TrafficMetrics(BaseModel):
     vehicles_per_minute: int = Field(..., ge=0, description="Number of vehicles per minute")
@@ -57,7 +59,7 @@ class TrafficData(BaseModel):
             datetime.fromisoformat(v.replace('Z', '+00:00'))
             return v
         except ValueError:
-            raise ValueError('Timestamp must be in ISO format (e.g., 2025-05-19T14:20:00Z)')
+            raise ValueError('Timestamp must be in ISO format (e.g., 2025-05-19T14:20:00Z)') from None
 
     @validator('traffic_light_id')
     def validate_traffic_light_id(cls, v):

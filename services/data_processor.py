@@ -1,8 +1,9 @@
-from typing import Dict, Any, List, Optional
-from models.schemas import SensorData, TrafficData
+import logging
+from typing import Any, Dict, List, Optional
+
+from models.schemas import SensorData
 from models.validator import validate_data_payload
 from utils.time import normalize_timestamp
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class DataProcessor:
                     # Validate sensor using Pydantic model
                     SensorData(**sensor)
                 except Exception as e:
-                    raise ValueError(f"Sensor at index {i} validation failed: {e}")
+                    raise ValueError(f"Sensor at index {i} validation failed: {e}") from e
             
             # Normalize timestamp
             timestamp = batch_data["timestamp"]

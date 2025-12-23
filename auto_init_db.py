@@ -4,10 +4,9 @@ Script automático para inicializar la base de datos PostgreSQL de traffic-contr
 Se ejecuta automáticamente desde run.sh
 """
 
-import os
 import sys
+
 import psycopg2
-from psycopg2 import sql
 
 # Configuración de la base de datos PostgreSQL
 DB_CONFIG = {

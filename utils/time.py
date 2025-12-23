@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Union
-import re
+
 
 class TimestampValidator:
     """Utility class for timestamp validation and conversion."""
@@ -92,7 +92,7 @@ def unix_to_iso(unix_timestamp: Union[int, str]) -> str:
         dt = datetime.fromtimestamp(unix_timestamp, tz=timezone.utc)
         return dt.isoformat().replace('+00:00', 'Z')
     except (ValueError, TypeError) as e:
-        raise ValueError(f"Failed to convert timestamp: {e}")
+        raise ValueError(f"Failed to convert timestamp: {e}") from e
 
 def normalize_timestamp(timestamp: Union[str, int]) -> tuple[str, int]:
     """

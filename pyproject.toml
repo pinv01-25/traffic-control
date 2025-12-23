@@ -73,6 +73,7 @@ select = [
 ]
 ignore = [
     "E203",  # espacio antes de ':' (para compatibilidad con muchos formateadores)
+    "E501", # 
 ]
 
 [tool.ruff.format]

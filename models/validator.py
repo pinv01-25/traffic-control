@@ -1,7 +1,8 @@
-from typing import Dict, Any, Union, List
-from datetime import datetime
 import re
-from utils.time import TimestampValidator, normalize_timestamp
+from typing import Any, Dict, List, Union
+
+from utils.time import TimestampValidator
+
 
 class DataValidator:
     """Modular validator for traffic data payloads."""
@@ -234,7 +235,7 @@ def validate_optimization_response(optimization: Union[Dict[str, Any], List[Dict
             try:
                 validate_payload(opt)
             except ValueError as e:
-                raise ValueError(f"Optimization at index {i} validation failed: {e}")
+                raise ValueError(f"Optimization at index {i} validation failed: {e}") from e
     else:
         # Single optimization response
         validate_payload(optimization)
