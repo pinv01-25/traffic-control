@@ -10,6 +10,7 @@ Traffic-Control es el módulo orquestador del sistema distribuido de gestión de
 └── pinv01-25-traffic-control/
     ├── README.md
     ├── LICENSE
+    ├── pyproject.toml
     ├── requirements.txt
     ├── run.sh
     ├── vercel.json
@@ -54,9 +55,11 @@ Traffic-Control es el módulo orquestador del sistema distribuido de gestión de
 
 - PostgreSQL (u otro motor soportado por SQLAlchemy)
 
+- [uv](https://docs.astral.sh/uv/) instalado (gestor de dependencias para Python)
+
 - Variables de entorno configuradas:
 
-  - .env con:
+  - `.env` con:
 
 ```
 DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/dbname
@@ -64,19 +67,51 @@ STORAGE_API_URL=http://localhost:8000
 SYNC_API_URL=http://localhost:8002
 ```
 
-### Instalar dependencias
+### Instalar dependencias (con uv)
 
+Instala todas las dependencias definidas en `pyproject.toml`:
+
+```bash
+uv sync
 ```
-pip install -r requirements.txt
+
+Para un entorno de desarrollo (incluyendo herramientas como `ruff`):
+
+```bash
+uv sync --group dev
 ```
 
 ### Ejecutar el servidor
 
-```
+```bash
 ./run.sh
 ```
 
+También puedes usar `uv` para ejecutar scripts o módulos:
+
+```bash
+uv run ./run.sh
+```
+
 Visita: [http://localhost:8003](http://localhost:8003)
+
+---
+
+### Comandos de desarrollo (ruff + uv)
+
+- **Analizar el código (lint) con `ruff`**:
+
+  ```bash
+  uv run ruff check .
+  ```
+
+- **Formatear el código con `ruff`**:
+
+  ```bash
+  uv run ruff format .
+  ```
+
+Estos comandos usan la configuración definida en `pyproject.toml` bajo `[tool.ruff]`.
 
 ---
 
