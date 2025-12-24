@@ -17,12 +17,28 @@ from sqlalchemy import create_engine, text
 load_dotenv()
 
 # Configuración de la base de datos PostgreSQL
-DB_CONFIG = {
-    'host': 'localhost',
-    'database': 'traffic_control',
-    'user': 'traffic_user',
-    'password': 'traffic_pass'
-}
+# Usar DATABASE_URL si está disponible, sino usar valores por defecto
+DATABASE_URL = os.getenv('DATABASE_URL', '')
+if DATABASE_URL and DATABASE_URL.startswith('postgresql://'):
+    # Parsear DATABASE_URL: postgresql://user:password@host:port/database
+    from urllib.parse import urlparse
+    parsed = urlparse(DATABASE_URL)
+    DB_CONFIG = {
+        'host': parsed.hostname or 'postgres',
+        'port': parsed.port or 5432,
+        'database': parsed.path.lstrip('/') or 'trafficdb',
+        'user': parsed.username or 'trafficuser',
+        'password': parsed.password or 'trafficpass'
+    }
+else:
+    # Valores por defecto para Docker
+    DB_CONFIG = {
+        'host': 'postgres',
+        'port': 5432,
+        'database': 'trafficdb',
+        'user': 'trafficuser',
+        'password': 'trafficpass'
+    }
 
 MAX_RETRIES = 3
 RETRY_DELAY = 2
