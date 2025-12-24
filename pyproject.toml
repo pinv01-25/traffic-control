@@ -1,7 +1,7 @@
 [project]
-name = "traffic-sync"
+name = "traffic-control"
 version = "0.1.0"
-description = "Traffic optimization service using FastAPI, fuzzy logic, clustering, and PSO."
+description = "Traffic control orchestration service"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = { file = "LICENSE" }
@@ -15,32 +15,18 @@ dependencies = [
     "greenlet==3.2.2",
     "h11==0.16.0",
     "idna==3.10",
-    "joblib==1.4.2",
-    "networkx==3.4.2",
-    "numpy==2.2.5",
-    "packaging==25.0",
-    "pandas==2.2.3",
     "psycopg2-binary==2.9.10",
     "pydantic==2.11.3",
     "pydantic_core==2.33.1",
-    "python-dateutil==2.9.0.post0",
     "python-dotenv==1.1.0",
-    "pytz==2025.2",
-    "pyyaml==6.0.2",
     "requests==2.32.3",
-    "scikit-fuzzy==0.5.0",
-    "scipy==1.15.2",
-    "six==1.17.0",
     "sniffio==1.3.1",
     "SQLAlchemy==2.0.30",
     "starlette==0.46.2",
     "typing-inspection==0.4.0",
     "typing_extensions==4.13.2",
-    "tzdata==2025.2",
     "urllib3==2.4.0",
     "uvicorn==0.34.2",
-    "watchfiles==1.0.5",
-    "websockets==15.0.1",
 ]
 
 [build-system]
@@ -48,7 +34,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["modules"]
+packages = ["api", "config", "database", "models", "services", "utils"]
 
 [project.optional-dependencies]
 speedups = [
