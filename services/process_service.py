@@ -66,47 +66,48 @@ class ProcessService:
     def process_data_batch(batch_data: TrafficData) -> Dict[str, Any]:
         """
         Process a batch of sensor data through the complete pipeline.
-        
+
         Args:
             batch_data: Batch of sensor data (unified format)
         Returns:
-            Processing result
+            Processing result including optimization data for the caller
         """
         logger.info(f"Processing batch data with {len(batch_data.sensors)} sensors")
-        
+
         # Process and validate batch
         processed_batch = DataProcessor.process_data_batch(batch_data.dict())
-        
+
         # Upload batch to storage
         upload_metadata = ProcessService._upload_batch_to_storage(processed_batch)
-        
+
         # Register metadata locally
         DatabaseService.register_metadata(
             upload_metadata["type"],
             upload_metadata["timestamp"],
             upload_metadata["traffic_light_id"]
         )
-        
+
         # Download batch for optimization
         fetched_batch = ProcessService._download_batch_for_optimization(processed_batch)
-        
+
         # Optimize batch using sync service
         optimized = ProcessService._optimize_batch(fetched_batch, batch_data.traffic_light_id)
-        
+
         # Validate optimized data
         ProcessService._validate_optimized_data(optimized)
-        
+
         # Upload optimized data
         ProcessService._upload_optimized_data(optimized)
-        
+
         # Register optimization metadata
         DatabaseService.register_optimization_metadata(optimized)
-        
+
         logger.info("Batch processing completed successfully")
-        return ResponseFactory.processing_success(
+        return ResponseFactory.processing_success_with_optimization(
             data_type=batch_data.type,
             traffic_light_id=batch_data.traffic_light_id,
-            timestamp=batch_data.timestamp
+            timestamp=batch_data.timestamp,
+            optimization=optimized,
         )
     
     # Private helper methods
@@ -126,11 +127,11 @@ class ProcessService:
         try:
             logger.info("Uploading data to storage...")
             response = StorageProxy.upload_to_storage(data)
-            logger.info("Upload successful:", response)
+            logger.info("Upload successful")
             return response
         except Exception as e:
-            logger.error(f"Upload to storage failed: {e}")
-            raise
+            logger.warning(f"Upload to storage failed (non-blocking): {e}")
+            return {}
     
     @staticmethod
     def _download_for_optimization(data: TrafficData) -> Dict[str, Any]:
@@ -183,41 +184,40 @@ class ProcessService:
         """Upload optimized data to storage."""
         try:
             logger.info("Uploading optimized data to storage...")
-            
-            # Check if this is a list of optimizations (batch result)
+
             if isinstance(optimized, list):
+                # List of individual optimization dicts
                 logger.info(f"Processing list of {len(optimized)} optimizations...")
-                
-                # Always create optimization batch format for storage
                 reference_optimization = optimized[0]
                 optimization_batch = {
                     "version": reference_optimization["version"],
                     "type": "optimization",
                     "timestamp": reference_optimization["timestamp"],
                     "traffic_light_id": reference_optimization["traffic_light_id"],
-                    "optimizations": optimized
+                    "optimizations": optimized,
                 }
-                
-                logger.info(f"Uploading optimization batch with {len(optimized)} optimizations")
-                StorageProxy.upload_to_storage(optimization_batch)
-                logger.info("Successfully uploaded optimization batch to storage")
+            elif "optimizations" in optimized:
+                # Already a batch format (e.g. from traffic-sync OptimizationBatch)
+                optimization_batch = optimized
+                logger.info(
+                    f"Uploading optimization batch with "
+                    f"{len(optimized['optimizations'])} optimizations"
+                )
             else:
-                # Single optimization - create batch format with single item
+                # Single optimization dict - wrap in batch format
                 optimization_batch = {
                     "version": optimized["version"],
                     "type": "optimization",
                     "timestamp": optimized["timestamp"],
                     "traffic_light_id": optimized["traffic_light_id"],
-                    "optimizations": [optimized]
+                    "optimizations": [optimized],
                 }
-                
-                logger.info("Uploading single optimization as batch format")
-                StorageProxy.upload_to_storage(optimization_batch)
-                logger.info("Single optimization upload successful.")
-                
+
+            StorageProxy.upload_to_storage(optimization_batch)
+            logger.info("Optimization upload successful.")
+
         except Exception as e:
-            logger.error(f"Optimized upload failed: {e}")
-            raise
+            logger.warning(f"Optimized upload failed (non-blocking): {e}")
     
     @staticmethod
     def _upload_batch_to_storage(processed_batch: Dict[str, Any]) -> Dict[str, Any]:
@@ -225,33 +225,38 @@ class ProcessService:
         try:
             logger.info("Uploading batch data to storage...")
             response = StorageProxy.upload_data_batch(processed_batch)
-            logger.info("Batch upload successful:", response)
-            
-            # Return metadata for database registration
-            metadata = {
-                "type": processed_batch["type"],
-                "timestamp": processed_batch["_unix_timestamp"],
-                "traffic_light_id": processed_batch["traffic_light_id"]
-            }
-            return metadata
+            logger.info("Batch upload successful")
         except Exception as e:
-            logger.error(f"Batch upload to storage failed: {e}")
-            raise
+            logger.warning(f"Batch upload to storage failed (non-blocking): {e}")
+
+        # Return metadata for database registration regardless
+        metadata = {
+            "type": processed_batch["type"],
+            "timestamp": processed_batch["_unix_timestamp"],
+            "traffic_light_id": processed_batch["traffic_light_id"],
+        }
+        return metadata
     
     @staticmethod
     def _download_batch_for_optimization(processed_batch: Dict[str, Any]) -> Dict[str, Any]:
-        """Download batch data for optimization."""
+        """Download batch data for optimization.
+
+        Falls back to using the already-validated processed_batch if
+        download from storage fails (e.g. BlockDAG connectivity issues).
+        """
         try:
             logger.info("Downloading batch data from storage...")
             fetched_batch = StorageProxy.download_data_batch(
                 processed_batch["traffic_light_id"],
                 processed_batch["timestamp"]
             )
-            logger.info("Batch download successful:", fetched_batch)
+            logger.info("Batch download successful")
             return fetched_batch
         except Exception as e:
-            logger.error(f"Batch download failed: {e}")
-            raise
+            logger.warning(
+                f"Batch download failed ({e}), using already-validated data as fallback"
+            )
+            return processed_batch
     
     @staticmethod
     def _optimize_batch(fetched_batch: Dict[str, Any], reference_sensor_id: str) -> Union[Dict[str, Any], List[Dict[str, Any]]]:

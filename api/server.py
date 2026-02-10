@@ -4,7 +4,8 @@ from database.db import init_db
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from models.response_models import HealthCheckResponse, ResponseFactory
-from models.schemas import TrafficData
+from models.schemas import RawSimulationData, TrafficData
+from services.data_formatter import DataFormatter
 from services.database_service import DatabaseService
 from services.process_service import ProcessService
 from utils.error_handler import error_handler_decorator
@@ -65,9 +66,29 @@ def process(data: TrafficData):
         return ProcessService.process_data_batch(batch_data)
     else:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Invalid data format. Must be either batch (with sensors) or single sensor (with direct fields)."
         )
+
+@app.post("/ingest")
+@error_handler_decorator("raw data ingestion")
+def ingest(raw_data: RawSimulationData):
+    """Ingest raw simulation data from traffic-sim.
+
+    Accepts raw SUMO data (non-normalized IDs, density in veh/km, etc.),
+    normalizes it via DataFormatter, then processes through the standard pipeline.
+    """
+    logger.info(f"Ingesting raw simulation data from source: {raw_data.source_id}")
+
+    formatted_data = DataFormatter.format_raw_to_traffic_data(raw_data)
+
+    logger.info(
+        f"Formatted: source '{raw_data.source_id}' -> "
+        f"traffic_light_id '{formatted_data.traffic_light_id}', "
+        f"{len(formatted_data.sensors)} sensors"
+    )
+
+    return ProcessService.process_data_batch(formatted_data)
 
 # New metadata endpoints
 @app.get("/metadata/traffic-light/{traffic_light_id}")

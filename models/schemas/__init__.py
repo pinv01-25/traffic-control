@@ -15,6 +15,7 @@ from ..response_models import (
 from .data_schema import SensorData, TrafficData, TrafficMetrics, VehicleStats
 from .download_schema import DownloadRequest
 from .optimization_schema import ImpactDetails, OptimizationData, OptimizationDetails
+from .raw_data_schema import RawSensorData, RawSensorMetrics, RawSimulationData
 
 __all__ = [
     # Response models
@@ -36,6 +37,10 @@ __all__ = [
     "TrafficMetrics",
     "VehicleStats",
     "DownloadRequest",
+    # Raw simulation schemas
+    "RawSimulationData",
+    "RawSensorData",
+    "RawSensorMetrics",
     # Optimization schemas
     "ImpactDetails",
     "OptimizationData",
